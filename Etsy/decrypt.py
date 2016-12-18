@@ -40,9 +40,14 @@ def decrypt(enc_file, password):
   creds_decrypted = fcrypto.decrypt(enc_token)
 
   with open(creds_decrypted, 'rb') as fpp:
-    creds = pickle.load(fp)
+    creds = pickle.load(creds_decrypted)
+  
   consumer_key = creds['client_key']
   client_secret = creds['client_secret']
   oauth_token = creds['oauth_token']
   oauth_token_secret = creds['oauth_token_secret']
   return creds
+
+if __name__ == "__main__":
+  script, enc_file, password = argv
+  decrypt(enc_file, password)
