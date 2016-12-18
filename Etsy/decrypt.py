@@ -5,7 +5,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-script, enc_file, password = argv
+#script, enc_file, password = argv
 
 
 def decrypt(enc_file, password): 
