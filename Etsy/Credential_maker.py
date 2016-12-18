@@ -46,7 +46,7 @@ def generate_creds():
   URI = '/oauth/request_token' # request token URI
   params = {} # empty parameters dict 
   print("Please select permissions from:")
-  print("https://www.etsy.com/develops/documentation/getting_started/oauth")    
+  print("https://www.etsy.com/developers/documentation/getting_started/oauth")    
   print("And enter them here seperated by a space.")
   print("(for example, enabling access to transactions_r and email_r")
   print("(simply press return to allow full permissions)")
