@@ -1,13 +1,24 @@
+"""
+Client package for interacting with Etsy's API
+
+"""
+__author__ = 'siorai@gmail.com (Paul Waldorf)'
+
+
+# Standard imports
 import json
 import logging
 import requests
 import pickle
 
 
+# Non-standard imports
 from requests_oauthlib import OAuth1
 from urlparse import parse_qs
 from urllib import urlencode
 
+
+# Local imports
 # import Etsy-Python
 import Credential_maker
 import decrypt
@@ -31,19 +42,23 @@ class EtsyPasswordError(Exception):
 class Etsy(object):
     """
     Class creating and making calls for the Etsy API
+    by creating an authorized object with an encrypted
+    credentials file and password for decrypting.
     """
 
     def __init__(self, creds_file=None, password=None):
         """
         Initializes the object and loads credentials file specified
-        if one is specific. If not, loads credentials_maker script
-        and prompts user to help create one(not implimented just quite
-        yet!)
+        so long as the correct password is supplied.
 
         Args:
-          creds_file: credential file created previously
-          password: password used to decrypt file
+          creds_file: string. credential file created previously
+          password: string. password used to decrypt file
 
+        Returns:
+	  Authorized credentials object to make calls defined
+          in Etsy class
+          
         """
 	if creds_file and password:
 	  creds = decrypt.decrypt(creds_file, password)
@@ -52,6 +67,7 @@ class Etsy(object):
 	  oauth_token = creds['oauth_token']
 	  oauth_token_secret = creds['oauth_token_secret']
           self.params = {'api_key': consumer_key}
+          self.Method_Dict = {}
           self.OAuth_Full = OAuth1(consumer_key,
                                    client_secret=client_secret,
                                    resource_owner_key=oauth_token,
@@ -61,6 +77,9 @@ class Etsy(object):
         #   print('Cannot open %s, please check the file.') % creds_file
 
     def get_user_info(self, user):
+        """
+	
+        """
         URI = '/users/%s' % user
         Auth = {}
         if user == '__SELF__':
@@ -68,6 +87,37 @@ class Etsy(object):
         response = self.api_call(URI, **Auth)
         return response
 
+    def getMethodTable(self):
+        """
+        Get a complete list of all of the methods available to the Etsy
+        API
+        """
+        URI = '/'
+        response = self.api_call(URI)
+	return response
+
+    def CompileMethods(self):
+        # self.MethodsDict = {}
+        API_Method_Response = self.getMethodTable()
+        for Each_Method in API_Method_Response['results']:
+          self.Method_Dict.update(
+                                   {Each_Method['name']:
+                                    {'Name': Each_Method['name'],
+                                     'URI': Each_Method['uri'],
+                                     'Visibility': Each_Method['visibility'],
+                                     'HTTP_Method': Each_Method['http_method'],
+                                     'Parameters': Each_Method['params'],
+                                     'Defaults': Each_Method['defaults'],
+                                     'Type': Each_Method['type'],
+                                     'Description': Each_Method['description'],
+                                    }
+                                   }
+                                 )
+        return self.Method_Dict
+
+    def ListOfMethods(self):
+	ListOfMethods = self.Method_Dict.keys()
+        print(ListOfMethods)
 
     def findAllShopReceipts(self, shop_id, offset=None):
         """
@@ -78,8 +128,8 @@ class Etsy(object):
         is capped at 100 per call.
 
         Args:
-            shop_id: Unique shop identifier as indicated from etsy
-            offset: Offset the results by a given amount
+            shop_id: string. Unique shop identifier as indicated from etsy
+            offset: string. Offset the results by a given amount
 
         Returns:
             JSON data as recieved from the Etsy API
