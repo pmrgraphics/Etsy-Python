@@ -18,6 +18,7 @@ import decrypt
 
 log = logging.getLogger(__name__)
 
+__author__ = "siorai@gmail.com Paul Waldorf"
 
 class EtsyPasswordError(Exception):
     """
@@ -33,7 +34,7 @@ class EtsyPasswordError(Exception):
 
 class Etsy(object):
     """
-    Class creating and making calls for the Etsy API
+    Class for creating and making calls for the Etsy API
     by creating an authorized object with an encrypted
     credentials file and password for decrypting.
     """
