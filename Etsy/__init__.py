@@ -41,12 +41,16 @@ class Etsy(object):
     def __init__(self, creds_file=None, password=None, json=None):
         """
         Initializes the object and loads credentials file specified
-        so long as the correct password is supplied.
+        so long as the correct password is supplied. 
+
+        Checks for locally cached Methods.json in order to create
+        a dictionary for all of the API Methods
 
         Args:
             creds_file: string. credential file created previously
             password: string. password used to decrypt file
-
+            json: string. /path/to/file for local JSON storage 
+                  defaults to './Methods.json'
         Returns:
             Authorized credentials object to make calls defined
             in Etsy class
@@ -85,7 +89,15 @@ class Etsy(object):
 
     def get_user_info(self, user):
         """
+        Fetches user information from the Etsy API
+        Used mainly for testing purposes currently.
 
+        Args:
+            user: string. can be any user, calling with
+                  '__SELF__' pulls the resource_owners information.
+
+        Returns:
+            JSON Information about the selected user.
         """
         URI = '/users/%s' % user
         Auth = {}
@@ -97,7 +109,14 @@ class Etsy(object):
     def getMethodTable(self):
         """
         Get a complete list of all of the methods available to the Etsy
-        API
+        API and save it to the local working directory for later use by
+        the script.
+
+        Args:
+            None
+
+        Returns:
+            None
         """
         Methods_File = './Methods.json'
         URI = '/'
@@ -119,11 +138,19 @@ class Etsy(object):
 
         
     def getListAll(self):
+        """
+        Returns a list of all the current Etsy API Methods available
+        as found by using the locally loaded Dictionary file.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         MethodsList = []
         for Each_Method in self.MethodsDict:
             MethodsList.append(Each_Method)
-        
-            
         print("""
         Here is a list of all of the API Methods available for the Etsy API.
         
@@ -138,6 +165,17 @@ class Etsy(object):
 
 
     def CompileMethods(self, Methods_File):
+        """
+        Compiles the methods from JSON Data and returns the parsed data
+        in a callable MethodsDict dictionary type object for further use 
+        by this script.
+
+        Args:
+            Methods_File: string. Name of JSON file where Methods will be
+            parsed from.
+        Returns:
+            Dictionary type object that contains the parsed methods 
+        """
         self.MethodsDict = {}
         with open(Methods_File, 'rb') as JF:    
             JSON_Data = json.load(JF)
