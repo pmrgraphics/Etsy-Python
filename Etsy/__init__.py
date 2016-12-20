@@ -125,7 +125,7 @@ class Etsy(object):
         with open(Methods_File, 'wb') as JF:
             json.dump(response, JF)
 
-    #def GetInfo(self, Call):
+    def GetInfo(self, Call):
         """
         Gets info about a specific Etsy API and returns it to the user
 
@@ -135,9 +135,16 @@ class Etsy(object):
         Returns:
             Info about the API Method to the user.
         """
-    
+        Method = self.MethodsDict[Call]
+        NormalDisplay = ['Name', 'URI', 'Visibility', 'HTTP_Method',
+                            'Type', 'Description']
+        for Each in Method:
+            if Each in NormalDisplay:
+                print("%s : %s") % (Each, Method[Each])
+            elif Each not in NormalDisplay:
+                for item in Method[Each]:
+                    print("%s List:  %s: (%s)") % (Each, item, Method[Each][item])  
 
-        
     def getListAll(self):
         """
         Returns a list of all the current Etsy API Methods available
