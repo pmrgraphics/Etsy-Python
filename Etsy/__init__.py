@@ -136,14 +136,17 @@ class Etsy(object):
             Info about the API Method to the user.
         """
         Method = self.MethodsDict[Call]
-        NormalDisplay = ['Name', 'URI', 'Visibility', 'HTTP_Method',
-                            'Type', 'Description']
+        ListDisplay = ['Defaults', 'Parameters']
         for Each in Method:
-            if Each in NormalDisplay:
+            if Each in ListDisplay:
+                try:
+                    for item in Method[Each]:
+                        print("%s List:  %s: (%s)") % (Each, item, Method[Each][item])               
+                except(TypeError):
+                    print("%s : None") % Each
+            else:
                 print("%s : %s") % (Each, Method[Each])
-            elif Each not in NormalDisplay:
-                for item in Method[Each]:
-                    print("%s List:  %s: (%s)") % (Each, item, Method[Each][item])  
+                
 
     def getListAll(self):
         """
