@@ -38,7 +38,7 @@ class Etsy(object):
     credentials file and password for decrypting.
     """
 
-    def __init__(self, creds_file=None, password=None):
+    def __init__(self, creds_file=None, password=None, json=None):
         """
         Initializes the object and loads credentials file specified
         so long as the correct password is supplied.
@@ -51,6 +51,7 @@ class Etsy(object):
             Authorized credentials object to make calls defined
             in Etsy class
         """
+        params = {}             
         if creds_file and password:
             creds = decrypt.decrypt(creds_file, password)
             consumer_key = creds['consumer_key']
@@ -59,9 +60,25 @@ class Etsy(object):
             oauth_token_secret = creds['oauth_token_secret']
             self.params = {'api_key': consumer_key}
             self.OAuth_Full = OAuth1(consumer_key,
-			    					 client_secret=client_secret,
+                                     client_secret=client_secret,
                                      resource_owner_key=oauth_token,
                                      resource_owner_secret=oauth_token_secret)
+
+        if json:
+            Methods_File = json
+            with open(Methods_File) as JSON_Data:
+                MethodsDict = self.CompileMethods(Methods_File)
+        else:
+            Methods_File = './Methods.json'
+            try:
+                with open(Methods_File, 'rb') as JSON_Data:
+                    MethodsDict = self.CompileMethods(Methods_File)
+            except IOError:
+                print("No Methods file found, creating Methods.json")
+                self.getMethodTable()
+                MethodsDict = self.CompileMethods(Methods_File)
+
+
 
         # except IOError:
         #   print('Cannot open %s, please check the file.') % creds_file
@@ -82,17 +99,52 @@ class Etsy(object):
         Get a complete list of all of the methods available to the Etsy
         API
         """
+        Methods_File = './Methods.json'
         URI = '/'
         response = self.api_call(URI)
-        return response
+        with open(Methods_File, 'wb') as JF:
+            json.dump(response, JF)
 
-    def CompileMethods(self):
+    #def GetInfo(self, Call):
+        """
+        Gets info about a specific Etsy API and returns it to the user
+
+        Args:
+            Call: string. Which function the user wants more information about
+
+        Returns:
+            Info about the API Method to the user.
+        """
+    
+
+        
+    def getListAll(self):
+        MethodsList = []
+        for Each_Method in self.MethodsDict:
+            MethodsList.append(Each_Method)
+        
+            
+        print("""
+        Here is a list of all of the API Methods available for the Etsy API.
+        
+        If you need more information, running 'getInfo(call)' where call is the
+        name of the function you wish to know more details about. 
+        """)
+        MethodsStr = str(MethodsList).replace("', u'", " ")
+        MethodsStr = MethodsStr.replace("[u'", "")
+        MethodsStr = MethodsStr.replace("']", "")
+        print(MethodsStr)
+
+
+
+    def CompileMethods(self, Methods_File):
         self.MethodsDict = {}
-        API_Method_Response = self.getMethodTable()
-        for Each_Method in API_Method_Response['results']:
-            self.Method_Dict.update(
-                                   {Each_Method['name']:
-                                    {'Name': Each_Method['name'],
+        with open(Methods_File, 'rb') as JF:    
+            JSON_Data = json.load(JF)
+        for Each_Method in JSON_Data['results']:
+            self.MethodsDict.update(
+                                    {Each_Method['name']:
+                                     {'Name': Each_Method['name'],
                                      'URI': Each_Method['uri'],
                                      'Visibility': Each_Method['visibility'],
                                      'HTTP_Method': Each_Method['http_method'],
@@ -102,7 +154,8 @@ class Etsy(object):
                                      'Description': Each_Method['description'],
                                      }
                                     }
-                                 )
+                                   )
+        
         return self.MethodsDict
 
     def findAllShopReceipts(self, shop_id, offset=None):
@@ -128,10 +181,10 @@ class Etsy(object):
         if offset:
             params['offset'] = offset
 
-        response = self.api_call(URI, params=params, oauth=oauth)
+        response = self.api_call(URI=URI, params=params, oauth=oauth)
         return response
 
-    def api_call(self, URI, method='get', oauth=None,
+    def api_call(self, URI=None, method='get', oauth=None,
                  params=None, files=None):
         """
         Calls the Etsy API
@@ -153,11 +206,11 @@ class Etsy(object):
             hooks = {'auth': oauth}
             if params is None:
                 params = {}
-            else:
-                if params is None:
-                    params = self.params
         else:
-            params.update(self.params)
+            if params is None:
+                params = self.params
+            else:
+                params.update(self.params)
 
         Full_URL = "%s%s" % (Base_URL, URI)
         querystr = urlencode(params)
